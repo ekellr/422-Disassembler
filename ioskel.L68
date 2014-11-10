@@ -1,0 +1,85 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.15.02
+Created On: 11/10/2014 2:46:10 PM
+
+00000000                             1  *-----------------------------------------------------------
+00000000                             2  * Title      :
+00000000                             3  * Written by :
+00000000                             4  * Date       :
+00000000                             5  * Description:
+00000000                             6  *-----------------------------------------------------------
+00000000                             7  
+00000000  =00005000                  8  stack   EQU   $00005000
+00000000  =00005001                  9  begin   EQU   $00005001
+00000000  =00FFFFFE                 10  end     EQU   $00FFFFFE
+00000000                            11  
+00001000                            12      ORG    $1000
+00001000                            13  start:
+00001000  4FF8 5000                 14          LEA stack, SP
+00001004                            15          
+00001004  103C 0032                 16          MOVE.B  #50,D0 ;close all files
+00001008  4E4F                      17          TRAP    #15
+0000100A                            18          
+0000100A  43F9 00001080             19          LEA fileNamePrompt,A1 ;prompt for name of file
+00001010  700D                      20          MOVE.L  #13,D0
+00001012  4E4F                      21          TRAP    #15
+00001014                            22          
+00001014  103C 0002                 23          MOVE.B  #2,D0 ;get file name from user and store at A1
+00001018  4E4F                      24          TRAP    #15 ***A1 currently fileNamePrompt
+0000101A                            25          
+0000101A  103C 0033                 26          MOVE.B  #51,D0 ;set for task to open existing file
+0000101E                            27                         ;with the file name
+0000101E  4E4F                      28          TRAP    #15
+00001020  B07C 0002                 29          CMP.W   #2,D0 ;check if file succesfully opened (2 represents error)
+00001024  6000 002E                 30          BRA     badfileopen ***todo:loop back if file not found
+00001028                            31          
+00001028  45F9 00001090             32          LEA     fileOneID,A2
+0000102E  2481                      33          MOVE.L  D1,(A2) ;store file id
+00001030                            34          
+00001030                            35          *****READ IN PROGRAM******
+00001030                            36          ;MOVE.B  
+00001030                            37          
+00001030                            38          
+00001030  43F9 00001058             39          LEA startLocationPrompt,A1 ;prompt for start loaction
+00001036  700D                      40          MOVE.L  #13,D0
+00001038  4E4F                      41          TRAP    #15
+0000103A  103C 0004                 42          MOVE.B  #4,D0   ;get start location
+0000103E  4E4F                      43          TRAP    #15
+00001040  2641                      44          MOVEA.L D1,A3   ;store location in A3
+00001042                            45  
+00001042  43F9 0000106D             46          LEA endLocationPrompt,A1 ;prompt for end location
+00001048  700D                      47          MOVE.L  #13,D0
+0000104A  4E4F                      48          TRAP    #15 
+0000104C  103C 0004                 49          MOVE.B  #4,D0   ;get end location
+00001050  4E4F                      50          TRAP    #15
+00001052  2841                      51          MOVEA.L D1,A4   ;store location in A4
+00001054                            52  
+00001054                            53      
+00001054                            54  badfileopen:
+00001054  FFFF FFFF                 55      SIMHALT             ; halt simulator
+00001058                            56  
+00001058                            57  * Put variables and constants here
+00001058= 45 6E 74 65 72 20 ...     58  startLocationPrompt DC.B    'Enter start location',0
+0000106D= 45 6E 74 65 72 20 ...     59  endLocationPrompt   DC.B    'Enter end location',0
+00001080= 45 6E 74 65 72 20 ...     60  fileNamePrompt      DC.B    'Enter file name',0
+00001090= 00000000                  61  fileOneID           DC.L    0
+00001094                            62  
+00001094                            63  
+00001094                            64      END    START        ; last line of source
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+BADFILEOPEN         1054
+BEGIN               5001
+END                 FFFFFE
+ENDLOCATIONPROMPT   106D
+FILENAMEPROMPT      1080
+FILEONEID           1090
+STACK               5000
+START               1000
+STARTLOCATIONPROMPT  1058

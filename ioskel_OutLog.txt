@@ -1,0 +1,6 @@
+EASy68K output log file: 11/10/2014 2:00:17 PM
+
+Enter start location
+4
+Enter end location
+8
