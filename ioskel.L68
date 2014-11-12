@@ -1,6 +1,6 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.02
-Created On: 11/10/2014 2:46:10 PM
+Created On: 11/12/2014 3:28:36 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      :
@@ -12,60 +12,105 @@ Created On: 11/10/2014 2:46:10 PM
 00000000  =00005000                  8  stack   EQU   $00005000
 00000000  =00005001                  9  begin   EQU   $00005001
 00000000  =00FFFFFE                 10  end     EQU   $00FFFFFE
-00000000                            11  
-00001000                            12      ORG    $1000
-00001000                            13  start:
-00001000  4FF8 5000                 14          LEA stack, SP
-00001004                            15          
-00001004  103C 0032                 16          MOVE.B  #50,D0 ;close all files
-00001008  4E4F                      17          TRAP    #15
-0000100A                            18          
-0000100A  43F9 00001080             19          LEA fileNamePrompt,A1 ;prompt for name of file
-00001010  700D                      20          MOVE.L  #13,D0
-00001012  4E4F                      21          TRAP    #15
-00001014                            22          
-00001014  103C 0002                 23          MOVE.B  #2,D0 ;get file name from user and store at A1
-00001018  4E4F                      24          TRAP    #15 ***A1 currently fileNamePrompt
-0000101A                            25          
-0000101A  103C 0033                 26          MOVE.B  #51,D0 ;set for task to open existing file
-0000101E                            27                         ;with the file name
-0000101E  4E4F                      28          TRAP    #15
-00001020  B07C 0002                 29          CMP.W   #2,D0 ;check if file succesfully opened (2 represents error)
-00001024  6000 002E                 30          BRA     badfileopen ***todo:loop back if file not found
-00001028                            31          
-00001028  45F9 00001090             32          LEA     fileOneID,A2
-0000102E  2481                      33          MOVE.L  D1,(A2) ;store file id
-00001030                            34          
-00001030                            35          *****READ IN PROGRAM******
-00001030                            36          ;MOVE.B  
-00001030                            37          
-00001030                            38          
-00001030  43F9 00001058             39          LEA startLocationPrompt,A1 ;prompt for start loaction
-00001036  700D                      40          MOVE.L  #13,D0
-00001038  4E4F                      41          TRAP    #15
-0000103A  103C 0004                 42          MOVE.B  #4,D0   ;get start location
-0000103E  4E4F                      43          TRAP    #15
-00001040  2641                      44          MOVEA.L D1,A3   ;store location in A3
-00001042                            45  
-00001042  43F9 0000106D             46          LEA endLocationPrompt,A1 ;prompt for end location
-00001048  700D                      47          MOVE.L  #13,D0
-0000104A  4E4F                      48          TRAP    #15 
-0000104C  103C 0004                 49          MOVE.B  #4,D0   ;get end location
-00001050  4E4F                      50          TRAP    #15
-00001052  2841                      51          MOVEA.L D1,A4   ;store location in A4
-00001054                            52  
-00001054                            53      
-00001054                            54  badfileopen:
-00001054  FFFF FFFF                 55      SIMHALT             ; halt simulator
-00001058                            56  
-00001058                            57  * Put variables and constants here
-00001058= 45 6E 74 65 72 20 ...     58  startLocationPrompt DC.B    'Enter start location',0
-0000106D= 45 6E 74 65 72 20 ...     59  endLocationPrompt   DC.B    'Enter end location',0
-00001080= 45 6E 74 65 72 20 ...     60  fileNamePrompt      DC.B    'Enter file name',0
-00001090= 00000000                  61  fileOneID           DC.L    0
-00001094                            62  
-00001094                            63  
-00001094                            64      END    START        ; last line of source
+00000000  =00000001                 11  byte    EQU   1
+00000000                            12  
+00001000                            13      ORG    $1000
+00001000                            14  start:
+00001000  4FF8 5000                 15          LEA stack, SP
+00001004                            16          
+00001004  43F9 000010C4             17          LEA startLocationPrompt,A1 ;prompt for start loaction
+0000100A  700D                      18          MOVE.L  #13,D0
+0000100C  4E4F                      19          TRAP    #15
+0000100E                            20          
+0000100E  43F9 0000110A             21          LEA     startLocation,A1 ;get start location
+00001014  6100 0026                 22          BSR     parseHexString
+00001018  47F9 0000110A             23          LEA     startLocation,A3 ;store start location in A3
+0000101E  2680                      24          MOVE.L  D0,(A3)
+00001020                            25  
+00001020  43F9 000010D9             26          LEA endLocationPrompt,A1 ;prompt for end location
+00001026  700D                      27          MOVE.L  #13,D0
+00001028  4E4F                      28          TRAP    #15 
+0000102A  103C 0004                 29          MOVE.B  #4,D0   ;get end location
+0000102E  4E4F                      30          TRAP    #15
+00001030  49F9 0000110E             31          LEA endLocation,A4 ;store end location in A4
+00001036  2880                      32          MOVE.L  D0,(A4)
+00001038  FFFF FFFF                 33          simhalt
+0000103C                            34  
+0000103C                            35  ***Pre:     Hex String is at (A1) and null terminated
+0000103C                            36  ***Post:    Value in hex is in D0  
+0000103C                            37  parseHexString:
+0000103C                            38          
+0000103C  2449                      39          MOVEA.L A1,A2
+0000103E  103C 0002                 40          MOVE.B  #2,D0 ;ask user for string  
+00001042  4E4F                      41          TRAP    #15
+00001044                            42          
+00001044  B27C 0009                 43          CMP.W   #9,D1
+00001048  6E00 0066                 44          BGT     badHexString
+0000104C                            45          
+0000104C  0C11 0024                 46          CMP.B   #'$',(A1)
+00001050  6600 005E                 47          BNE     badHexString
+00001054  5289                      48          ADDQ.L  #byte,A1
+00001056  7000                      49          MOVEQ.L #0,D0 ;clear D0
+00001058  7408                      50          MOVEQ.L #8,D2 ;prevent trying to read more than 4 bytes
+0000105A                            51  HexStringBody:
+0000105A                            52          
+0000105A  0C11 0000                 53          CMP.B   #0,(A1) ;if reach zero, end of string
+0000105E  6700 002E                 54          BEQ     HexStringDone
+00001062  B43C 0000                 55          CMP.B   #0,D2 ;check how many nybbles have been read
+00001066  6D00 0026                 56          BLT     HexStringDone
+0000106A                            57                
+0000106A  0C11 0030                 58          CMP.B   #'0',(A1)
+0000106E  6D00 0040                 59          BLT     badHexString
+00001072  0C11 0039                 60          CMP.B   #'9',(A1)
+00001076  6F00 0018                 61          BLE     hexNumber
+0000107A                            62          
+0000107A  0C11 0041                 63          CMP.B   #'A',(A1)
+0000107E  6D00 0030                 64          BLT     badHexString
+00001082  0C11 0046                 65          CMP.B   #'F',(A1)
+00001086  6F00 0016                 66          BLE     hexAlpha
+0000108A  6000 0024                 67          BRA     badHexString
+0000108E                            68          
+0000108E                            69          
+0000108E                            70  HexStringDone:
+0000108E                            71          
+0000108E  4E75                      72          RTS
+00001090                            73  HexNumber:
+00001090  E988                      74          LSL.L   #4,D0
+00001092  1211                      75          MOVE.B (A1),D1
+00001094  0401 0030                 76          SUB.B  #'0',D1
+00001098  D081                      77          ADD.L  D1,D0
+0000109A  5289                      78          ADDQ.L #byte,A1
+0000109C  60BC                      79          BRA HexStringbody
+0000109E                            80  HexAlpha:
+0000109E  E988                      81          LSL.L   #4,D0
+000010A0  1211                      82          MOVE.B (A1),D1
+000010A2  0401 0041                 83          SUB.B  #'A',D1
+000010A6  0601 000A                 84          ADD.B  #10,D1
+000010AA  D081                      85          ADD.L  D1,D0
+000010AC  5289                      86          ADDQ.L #byte,A1
+000010AE                            87  
+000010AE  60AA                      88          BRA HexStringbody
+000010B0                            89  badHexString:
+000010B0                            90          
+000010B0  43F9 000010EC             91          LEA     invalidHexStringMessage,A1
+000010B6  700D                      92          MOVE.L  #13,D0
+000010B8  4E4F                      93          TRAP    #15
+000010BA  224A                      94          MOVEA.L A2,A1
+000010BC  6000 FF7E                 95          BRA parseHexString
+000010C0                            96  
+000010C0  FFFF FFFF                 97      SIMHALT             ; halt simulator
+000010C4                            98  
+000010C4                            99  * Put variables and constants here
+000010C4= 45 6E 74 65 72 20 ...    100  startLocationPrompt DC.B    'Enter start location',0
+000010D9= 45 6E 74 65 72 20 ...    101  endLocationPrompt   DC.B    'Enter end location',0
+000010EC= 49 6E 76 61 6C 69 ...    102  invalidHexStringMessage DC.B 'Invalid Hex. Please try again',0
+0000110A                           103  
+0000110A= 00000000                 104  startLocation       DC.L    0
+0000110E= 00000000                 105  endLocation         DC.L    0
+00001112                           106  
+00001112                           107  
+00001112                           108  
+00001112                           109      END    START        ; last line of source
 
 No errors detected
 No warnings generated
@@ -74,12 +119,19 @@ No warnings generated
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-BADFILEOPEN         1054
+BADHEXSTRING        10B0
 BEGIN               5001
+BYTE                1
 END                 FFFFFE
-ENDLOCATIONPROMPT   106D
-FILENAMEPROMPT      1080
-FILEONEID           1090
+ENDLOCATION         110E
+ENDLOCATIONPROMPT   10D9
+HEXALPHA            109E
+HEXNUMBER           1090
+HEXSTRINGBODY       105A
+HEXSTRINGDONE       108E
+INVALIDHEXSTRINGMESSAGE  10EC
+PARSEHEXSTRING      103C
 STACK               5000
 START               1000
-STARTLOCATIONPROMPT  1058
+STARTLOCATION       110A
+STARTLOCATIONPROMPT  10C4
