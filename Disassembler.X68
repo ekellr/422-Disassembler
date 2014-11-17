@@ -221,6 +221,9 @@ moveInstruction  EQU 0
 
 ***
 
+startLocationPrompt DC.B    'Enter start location',0
+endLocationPrompt   DC.B    'Enter end location',0
+
 clearLine  DC.B $0D,$0A,0
 
 invalidHexStringMessage DC.B 'Invalid Hex. Please try again',0
@@ -230,13 +233,14 @@ moveMessage DC.B 'MOVE',0
 moveaMessage DC.B 'MOVEA',0
 nopMessage  DC.B 'NOP',0 
 
-
 startLocation       DC.L    0
 endLocation         DC.L    0
 
 
 
     END    START        ; last line of source
+
+
 
 
 

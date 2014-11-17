@@ -1,0 +1,70 @@
+00003000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.15.02
+Created On: 11/17/2014 1:56:48 PM
+
+00000000                             1  *-----------------------------------------------------------
+00000000                             2  * Title      : Pattern Matching
+00000000                             3  * Written by : Robert Anderson
+00000000                             4  * Date       : 11/12/2014
+00000000                             5  * Description: A program that can search through memory and
+00000000                             6  *              find a pattern match using defined constants.
+00000000                             7  *-----------------------------------------------------------
+00000000                             8  
+00000000  =00003000                  9  begin       EQU         $3000           * Org beginning address
+00000000  =00002700                 10  exit        EQU         $2700           * Simulator stop code address
+00000000  =00000001                 11  bit         EQU         1               * Advance by one bit
+00000000                            12  
+00003000                            13      ORG    begin
+00003000                            14      
+00003000                            15  START:                  
+00003000                            16  
+00003000  2079 00003032             17          MOVEA.L start_addr,A0           * Load starting search address
+00003006  2279 00003036             18          MOVEA.L end_range,A1            * Range of addresses to search through 
+0000300C  2479 0000303A             19          MOVEA.L not_fnd,A2              * Search Result Address
+00003012  1039 0000303E             20          MOVE.B  srch_ptrn,D0            * Binary pattern to search
+00003018                            21     
+00003018  B010                      22  loop    CMP.B        (A0),D0            * Search for test pattern    
+0000301A  6700 000C                 23          BEQ          match              * Search pattern found in A0, save and exit
+0000301E  5288                      24          ADDQ.L       #bit,A0            * Increment address pointer
+00003020  B1C9                      25          CMPA.L       A1,A0              * Are we done yet?
+00003022  6E00 0006                 26          BGT          no_match           * Past range? Exit (A0 > A1)
+00003026  60F0                      27          BRA          loop               * Search incremented memory at A0
+00003028                            28  
+00003028  2488                      29  match   MOVE.L       A0,(A2)            * Save contents of data at A0 into A2
+0000302A  4E72 2700                 30  no_match   STOP      #exit              * Break out of the simulator
+0000302E                            31  
+0000302E  FFFF FFFF                 32      SIMHALT             ; halt simulator
+00003032                            33      
+00003032                            34  **********************************************************************
+00003032                            35  *                           Data Section
+00003032                            36  **********************************************************************    
+00003032                            37      
+00003032                            38  *=====================================================================
+00003032                            39  *                        Variables and Constants 
+00003032                            40  *=====================================================================    
+00003032                            41  
+00003032= 00007000                  42  start_addr DC.L         $00007000     
+00003036= 00008000                  43  end_range  DC.L         $00008000 
+0000303A= FFFFFFFF                  44  not_fnd    DC.L         $FFFFFFFF
+0000303E= FD                        45  srch_ptrn  DC.B         253   
+0000303F                            46  
+0000303F                            47      END    START        ; last line of source
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+BEGIN               3000
+BIT                 1
+END_RANGE           3036
+EXIT                2700
+LOOP                3018
+MATCH               3028
+NOT_FND             303A
+NO_MATCH            302A
+SRCH_PTRN           303E
+START               3000
+START_ADDR          3032

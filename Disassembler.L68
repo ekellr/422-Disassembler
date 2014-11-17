@@ -1,0 +1,122 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.15.02
+Created On: 11/10/2014 2:47:22 PM
+
+00000000                             1      
+00000000                             2  *****Symbols*****
+00000000  =00001000                  3  prog_st     EQU $00001000 ;start of program to be disassembled
+00000000  =000010F0                  4  prog_end    EQU $000010F0 ;end of program to be disassembled
+00000000  =00001000                  5  start       EQU $1000      ;this program's instructions begin here in memory
+00000000  =00002700                  6  exit        EQU $2700     ;
+00000000  =00000002                  7  word        EQU 2         ;makes it clear when adding to a memory address,
+00000000                             8                            ;2 is a word
+00000000                             9  
+00000000  =00004E71                 10  NoOpInstruction  EQU %0100111001110001
+00001000                            11      ORG    start
+00001000                            12          
+00001000  103C 0032                 13          MOVE.B  #50,D0 ;close all files
+00001004  4E4F                      14          TRAP    #15
+00001006                            15          
+00001006  43F9 0000109A             16          LEA     fileName,A1 ;load address of file name to A1
+0000100C  103C 0033                 17          MOVE.B  #51,D0 ;set for task to open existing file
+00001010                            18                         ;with the file name
+00001010  4E4F                      19          TRAP    #15
+00001012                            20          
+00001012  B07C 0002                 21          CMP.W   #2,D0 ;check if file succesfully opened
+00001016  6700 0070                 22          BEQ     endOfProg
+0000101A  45F9 000010B0             23          LEA     fileOneID,A2 ;save file ID
+00001020  2481                      24          MOVE.L  D1,(A2)
+00001022                            25          
+00001022                            26  *        LEA     prog_st,A2  ;load start of prog into address reg A0
+00001022                            27  *        LEA     prog_end,A3 ;load end of prog into address reg A1
+00001022  4E71                      28          NOP
+00001024                            29  loopStart:
+00001024                            30          
+00001024  43F9 000010AC             31          LEA     fileReadBuffer,A1
+0000102A  2212                      32          MOVE.L  (A2),D1 ;make sure file ID in D1
+0000102C  143C 0002                 33          MOVE.B  #2,D2
+00001030  103C 0035                 34          MOVE.B  #53,D0 ;read in a word
+00001034  4E4F                      35          TRAP    #15
+00001036                            36          
+00001036  B43C 0002                 37          CMP.B   #2,D2 ;anything less two indicates EOF
+0000103A  6D00 0048                 38          BLT     eof
+0000103E                            39          
+0000103E  3211                      40          MOVE.W  (A1),D1 ;move data into register
+00001040  6000 0004                 41          BRA     checkOpCode
+00001044                            42  loopBody:
+00001044                            43  *        ADDQ.L  #word,A2
+00001044                            44  *        CMPA.L  A2,A3
+00001044                            45  *        BLT     endOfProg
+00001044  60DE                      46          BRA     loopStart
+00001046                            47          
+00001046                            48  checkOPcode:
+00001046                            49          
+00001046  0C41 4E71                 50          CMPI.W  #NoOpInstruction,D1
+0000104A  6700 0006                 51          BEQ     NOP
+0000104E  6000 0010                 52          BRA     unknownOpCode
+00001052                            53          
+00001052                            54  NOP:
+00001052                            55  
+00001052  43F9 00001096             56          LEA     nopString,A1  ;move string for NOP info
+00001058  103C 000D                 57          MOVE.B  #13,D0        ;set for task to display null terminated 
+0000105C                            58                                ;string with CR, LF
+0000105C  4E4F                      59          TRAP    #15
+0000105E                            60  
+0000105E  60E4                      61          BRA     loopBody
+00001060                            62          
+00001060                            63  unknownOpCode:
+00001060  43F9 0000108C             64          LEA     dataString,A1 ;move string for data info
+00001066  103C 000E                 65          MOVE.B  #14,D0        ;set for task to display null terminated 
+0000106A                            66                                ;string without CR, LF
+0000106A  4E4F                      67          TRAP    #15
+0000106C                            68          
+0000106C  143C 0010                 69          MOVE.B  #16,D2        ;set for displaying a base16(hex) number
+00001070  103C 000F                 70          MOVE.B  #15,D0
+00001074  4E4F                      71          TRAP    #15
+00001076  43F9 00001093             72          LEA     clearLine,A1  ;move string for a CR and LF
+0000107C  103C 000E                 73          MOVE.B  #14,D0        ;set for task to display null terminated 
+00001080                            74                                ;string without CR, LF
+00001080  4E4F                      75          TRAP    #15
+00001082  60C0                      76          BRA     loopBody
+00001084                            77          
+00001084                            78  eof:
+00001084  6000 0002                 79      BRA endOfProg    
+00001088                            80          
+00001088                            81  endOfProg:
+00001088                            82  
+00001088  FFFF FFFF                 83      SIMHALT
+0000108C                            84  *****Constants*****
+0000108C= 44 41 54 41 3A 20 00      85  dataString DC.B 'DATA: ',0
+00001093= 0D 0A 00                  86  clearLine  DC.B $0D,$0A,0
+00001096= 4E 4F 50 00               87  nopString  DC.B 'NOP',0 
+0000109A= 44 69 73 61 73 73 ...     88  fileName   DC.B 'Disassembler.bin',0
+000010AC= 00000000                  89  fileReadBuffer DC.L 0
+000010B0= 00000000                  90  fileOneID  DC.L   0 
+000010B4                            91      END  start
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+CHECKOPCODE         1046
+CLEARLINE           1093
+DATASTRING          108C
+ENDOFPROG           1088
+EOF                 1084
+EXIT                2700
+FILENAME            109A
+FILEONEID           10B0
+FILEREADBUFFER      10AC
+LOOPBODY            1044
+LOOPSTART           1024
+NOOPINSTRUCTION     4E71
+NOP                 1052
+NOPSTRING           1096
+PROG_END            10F0
+PROG_ST             1000
+START               1000
+UNKNOWNOPCODE       1060
+WORD                2
