@@ -9,7 +9,11 @@ stack   EQU   $00005000
 begin   EQU   $00005001
 end     EQU   $00FFFFFE
 byte    EQU   1
+word    EQU   2
+long    EQU   4
 
+    ORG $00000FFE
+FarLabel:
     ORG    $1000
 start:
         LEA stack, SP ;initialize stack
@@ -35,38 +39,64 @@ start:
         ;LEA endLocation,A4 ;store end location in A4
         ;MOVE.L  D0,(A4)
         
-        MOVE.L  #$303E,A4
+        MOVE.L  #snippetEnd,A4
         
 mainLoop:
-        
-        MOVE.W (A3),D1 ;copy word from other prog to analyze as instruction
-        CMPA.L A3,A4
+        CMPA.L A3,A4 ;check end of prog
         BEQ fin
         
-checkOPcode:
+        MOVE.W (A3),D1 ;copy word from other prog to analyze as instruction
         
-        CMPI.W  #NoOpInstruction,D1 ;
-        BEQ     NOP
+        MOVEQ.L #0,D3
+        
+        ***things to save A3,A4,D1(?)***
+        MOVEM.L A3-A4,-(SP)
+        BSR checkOPcode
+        MOVEM.L (SP)+,A3-A4
+        ADDA.L  D7,A3 ;look past data that was part of the instruction
+        
+        ADDQ.L  #word,A3
+        BRA     mainLoop 
+        
+checkOPcode:
+
+
+        LEA     instOPList,A0 ;get instruction signitrue list in A0
+        ADDA.L  D3,A0 ;get correct sig         
+        
+        LEA     instMaskList,A1 ;get instruction mask in A1
+        ADDA.L  D3,A1  ;get correct mast
         
         MOVE.W  D1,D2 ;move instruction into D2 for manipulaiton
-        MOVE.B  #14,D0
-        LSR.W   D0,D2
-        CMPI.W  #moveInstruction,D2
-        BEQ     MOVE
         
-        BRA     unknownOpCode
-
-loopend:
-        ADDQ   #2,A3
-        BRA mainLoop
-    
-
-
-instOPList DC.L NoOpInstruction,moveInstruction,0 ; dataInstruction,0          
+        AND.W   (A1),D2 ;mask instruction
+        CMP.W   (A0),D2 ;compare to sig
+        BEQ     found ;if sig matches branch
         
-;instMaskList DC.L NoOpMask,moveMask,0 ; dataInstruction,0          
-;instTextList DC.L NoOpText, moveText,0
+        ADDQ.L  #word,D3 ;if not found, add to D3 and check for next instruction
+        BRA checkOPcode
 
+found:
+        
+        LEA     instLabelList,A1 ;get instruction code label
+        ADDA.L  D3,A1 ;get correct label
+        ADDA.L  D3,A1
+        MOVEA.L (A1),A1
+        JSR     (A1)
+        RTS
+        
+
+instOPList DC.W NoOpInstruction,moveInstruction,braInstruction,dataInstruction         
+instMaskList DC.W NoOpMask,moveMask,braMask,dataMask          
+instLabelList DC.L NOP, MOVE,BRA,unknownOpCode
+
+snippet:
+         NOP
+         BRA snippet
+         BRA FarLabel
+         MOVE.B #4,D1
+snippetEnd:
+         SIMHALT
         
         
 NOP:
@@ -76,8 +106,7 @@ NOP:
                               ;string with CR, LF
         TRAP    #15
 
-        BRA     loopend
-        ; bra -> rts
+        RTS
 MOVE:
         
         
@@ -103,7 +132,8 @@ MOVE:
                               ;string with CR, LF
         TRAP    #15
 
-        BRA     loopend
+        MOVEQ.L #0,D7
+        RTS
         
 MOVEA:
         LEA     moveAMessage,A1  ;move string for MOVE
@@ -111,9 +141,52 @@ MOVEA:
                               ;string with CR, LF
         TRAP    #15
 
-        BRA     loopend
+        RTS
 
            
+BRA:
+
+        LEA     braMessage,A1  ;move string for BRA info
+        MOVE.B  #14,D0        ;set for task to display null terminated 
+                              ;string without CR, LF
+        TRAP    #15
+        
+        ADDQ.L  #word,A3 ;move past instruction in case long displacement
+        AND.W   #$00FF,D1   ;check for word sized displacement
+        
+        CMP.B   #$0,D1
+        BEQ     BRAWord
+        
+        CMP.B   #$FF,D1 check for long sized displacement
+        BEQ     BRALong
+        
+BRAByte:
+        
+        MOVEQ.L #0,D7 ;pass back no extra data followed
+        BRA     BRADone
+BRAWord:
+        MOVE.W  (A3),D1
+        
+        MOVEQ.L #word,D7 ;pass back an extra word followed
+        BRA     BRADone
+BRALong:
+        MOVE.L  (A3),D1
+        
+        MOVEQ.L #long,D7 ;pass back an extra long followed
+        BRA     BRADone
+BRADone:
+
+        MOVE.W  #16,D2 ;put base in D2
+        MOVE.W  #15,D0  ;put task #15 in D0
+        TRAP    #15
+        
+        LEA     clearLine,A1  ;move string for a CR and LF
+        MOVE.B  #14,D0        ;set for task to display null terminated 
+                              ;string without CR, LF
+        TRAP    #15
+
+        
+        RTS
         
         
 unknownOpCode:
@@ -129,7 +202,9 @@ unknownOpCode:
         MOVE.B  #14,D0        ;set for task to display null terminated 
                               ;string without CR, LF
         TRAP    #15
-        BRA     mainLoop
+        
+        MOVEQ.L #0,D7
+        RTS
         
 fin
 
@@ -206,9 +281,7 @@ badHexString:
     SIMHALT             ; halt simulator
 
 
-snippet: NOP
-         NEG D3
-         SIMHALT
+
 
 
 
@@ -218,8 +291,19 @@ snippet: NOP
 
 NoOpInstruction  EQU %0100111001110001
 moveInstruction  EQU 0
+braInstruction   EQU %0110000000000000
+dataInstruction  EQU 0
 
 ***
+
+***list of OP masks
+
+NoOpMask  EQU $FFFF
+moveMask  EQU $C000
+braMask   EQU $FF00
+dataMask  EQU 0
+***
+
 
 startLocationPrompt DC.B    'Enter start location',0
 endLocationPrompt   DC.B    'Enter end location',0
@@ -228,17 +312,25 @@ clearLine  DC.B $0D,$0A,0
 
 invalidHexStringMessage DC.B 'Invalid Hex. Please try again',0
 
-dataMessage DC.B 'DATA: ',0
-moveMessage DC.B 'MOVE',0
-moveaMessage DC.B 'MOVEA',0
+
 nopMessage  DC.B 'NOP',0 
+moveMessage DC.B 'MOVE',0
+braMessage  DC.B 'BRA ',0
+dataMessage DC.B 'DATA: ',0
+
+
+moveaMessage DC.B 'MOVEA',0
+
 
 startLocation       DC.L    0
 endLocation         DC.L    0
 
 
-
+   
     END    START        ; last line of source
+    
+
+
 
 
 
