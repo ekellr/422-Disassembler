@@ -1,0 +1,64 @@
+*-----------------------------------------------------------
+* Title      : SUB and SUBQ tests
+* Written by :
+* Date       : 11/19
+* Description: Immediate data
+*-----------------------------------------------------------
+    ORG    $1000
+START:                  ; first instruction of program
+
+* Put program code here
+
+
+;Immediate data
+
+*--------- SUB and SUB.Q test---------
+
+    SUB.B   D4,D0       ;SUB and SUBQ have the same data test of OR test
+    SUB.B   #22,D2
+    SUB.B   #47,(A1)
+    SUB.B   #47,(A2)
+    SUB.B   D1,(A2)+
+    SUB.B   D2,(A3)+
+    SUB.B   #13,(A2)+
+    SUB.B   #24,(A3)+    
+    SUB.B   #11,-(A1)
+    SUB.B   #21,-(A2)
+    SUB.B   #37,-(A3)
+    SUB.B   #44,-(A4)
+    
+    SUB.W   #33,D0
+    SUB.W   D2,D1
+    SUB.W   D3,(A1)
+    SUB.W   #5213,(A2)
+    SUB.W   #1002,(A1)+
+    SUB.W   #4431,(A2)+
+    SUB.W   #3245,(A3)+
+    SUB.W   #2332,-(A1)
+    SUB.W   #3562,-(A2)
+    SUB.W   #3002,-(A4)
+    SUB.W   #1213,$3728
+    SUB.W   #4703,$1728
+    SUB.W   D3,$2443
+    SUB.W   #6013,$1128
+
+    SUB.L   #12004300,D0
+    SUB.L   #10000002,D1
+    SUB.L   #0081,(A1)
+    SUB.L   #10010099,(A2)
+    SUB.L   #10230000,(A4)
+    SUB.L   #10212209,(A1)+
+    SUB.L   #34004029,(A2)+
+    SUB.L   #21094455,(A1)+
+    SUB.L   #11001021,-(A3)
+    SUB.L   #20000000,-(A2)
+    SUB.L   #12345689,-(A1)
+    SUB.L   #10023101,$11117246
+    SUB.L   #12200302,$55341123
+    
+
+    SIMHALT             ; halt simulator
+
+* Put variables and constants here
+
+    END    START        ; last line of source
