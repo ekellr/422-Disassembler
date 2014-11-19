@@ -1,0 +1,131 @@
+*-----------------------------------------------------------
+* Title      : Logical Shift Right ans Left test
+* Written by : EK
+* Date       : 11/19/2014
+* Description:
+*-----------------------------------------------------------
+    ORG    $1000
+START:                  ; first instruction of program
+
+* Put program code here
+
+** Bcc
+
+    MOVE.B  #2,D0
+    CMP.B   #1,D0
+    CMP.W   #3,D0
+    CMP.L   #4,D1
+    
+    BCS     TESTBCS     ;carry set
+    BGE     TESTBGE     ;branch greater than
+    BLT     TESTBLT     ;branch less than
+    BNE     TESTBNE     ;Branch not equal
+  
+
+*--------- Logical Shift Right -------- 
+  
+    LSR.B  D0,D1
+    LSR.B  #5,D2
+    
+    LSR.W  D6,D7
+    LSR.W  #3,D0
+    
+    LSR.L  D4,D5
+    LSR.L  #3,D0
+    
+  
+*--------- Logical Shift Left -------- 
+
+    LSL.B  D0,D1
+    LSL.B  #5,D2
+
+    LSL.W  D6,D7
+    LSL.W  #3,D0
+    
+    LSL.L  D4,D5
+    LSL.L  #3,D0
+    
+TESTBCS
+    
+*--------- Logical Shift Right --------
+
+    LSR.B  D2,D3
+    LSR.B  #7,D4
+    
+    LSR.W  D2,D3
+    LSR.W  #5,D4
+  
+    LSR.L  D4,D7
+    LSR.L  #1,D0
+    
+    
+*--------- Logical Shift Left -------- 
+
+    LSL.B  D2,D3
+    LSL.B  #7,D4
+    
+    LSL.W  D2,D3
+    LSL.W  #5,D4
+  
+    LSL.L  D4,D7
+    LSL.L  #1,D0
+    
+TESTBGE
+
+  
+*--------- Logical Shift Right -------- 
+    LSR.B  D2,D3
+    LSR.B  #7,D4
+    
+    LSR.W  D2,D3
+    LSR.W  #5,D4
+  
+    LSR.L  D4,D7
+    LSR.L  #1,D0
+    
+*--------- Logical Shift Left --------   
+
+    LSL.B  D1,D2
+    LSL.B  #2,D4
+    
+    
+    LSL.W  D3,D2
+    LSL.W  #5,D6
+
+    LSL.L  D5,D6
+    LSL.L  #8,D3    ;constant needs to be less then #9
+    
+TESTBLT
+
+
+*--------- Logical Shift Right -------- 
+
+    LSR.B  D1,D2
+    LSR.B  #4,D3
+    
+    LSR.W  D3,D4
+    LSR.W  #3,D5
+
+    LSR.L  D1,D0
+    LSR.L  #2,D1
+    
+    
+*--------- Logical Shift Left -------- 
+
+    LSL.B  D1,D2
+    LSL.B  #4,D3
+    
+    LSL.W  D3,D4
+    LSL.W  #3,D5
+
+    LSL.L  D1,D0
+    LSL.L  #2,D1
+    
+TESTBNE
+
+
+    SIMHALT             ; halt simulator
+
+* Put variables and constants here
+
+    END    START        ; last line of source
