@@ -1,0 +1,160 @@
+*-----------------------------------------------------------
+* Title      : Test Code
+* Written by : elaine Keller
+* Date       :11/19/2014
+* Description: test the desassembler file
+*-----------------------------------------------------------
+    ORG    $1000
+START:                  ; first instruction of program
+
+* Put program code here
+
+*----------OR test----------- 
+
+    OR.B   D4,D0
+    OR.B   #22,D2
+    OR.B   #47,(A1)
+    OR.B   #47,(A2)
+    OR.B   D1,(A2)+
+    OR.B   D2,(A3)+
+    OR.B   #13,(A2)+
+    OR.B   #24,(A3)+    
+    OR.B   #11,-(A1)
+    OR.B   #21,-(A2)
+    OR.B   #37,-(A3)
+    OR.B   #44,-(A4)
+    
+    OR.W   #33,D0
+    OR.W   D2,D1
+    OR.W   D3,(A1)
+    OR.W   #5213,(A2)
+    OR.W   #1002,(A1)+
+    OR.W   #4431,(A2)+
+    OR.W   #3245,(A3)+
+    OR.W   #2332,-(A1)
+    OR.W   #3562,-(A2)
+    OR.W   #3002,-(A4)
+    OR.W   #1213,$3728
+    OR.W   #4703,$1728
+    OR.W   D3,$2443
+    OR.W   #6013,$1128
+
+    OR.L   #12004300,D0
+    OR.L   #10000002,D1
+    OR.L   #0081,(A1)
+    OR.L   #10010099,(A2)
+    OR.L   #10230000,(A4)
+    OR.L   #10212209,(A1)+
+    OR.L   #34004029,(A2)+
+    OR.L   #21094455,(A1)+
+    OR.L   #11001021,-(A3)
+    OR.L   #20000000,-(A2)
+    OR.L   #12345689,-(A1)
+    OR.L   #10023101,$11117246
+    OR.L   #12200302,$55341123
+    
+
+*---------ORI test-----------
+    
+    ORI.B   #34,D0
+    ORI.B   #22,D1
+    ORI.B   #47,(A1)
+    ORI.B   #47,(A2)
+    ORI.B   #13,(A2)+
+    ORI.B   #22,(A3)+
+    ORI.B   #21,(A1)+
+    ORI.B   #41,(A3)+    
+    ORI.B   #10,-(A1)
+    ORI.B   #20,-(A2)
+    ORI.B   #36,-(A3)
+    ORI.B   #40,-(A4)
+     
+    ORI.W   #1234,D0
+    ORI.W   #1321,D1
+    ORI.W   #3452,(A1)
+    ORI.W   #5213,(A2)
+    ORI.W   #1002,(A1)+
+    ORI.W   #4431,(A2)+
+    ORI.W   #3245,(A3)+
+    ORI.W   #2332,-(A1)
+    ORI.W   #3562,-(A2)
+    ORI.W   #3002,-(A4)
+    ORI.W   #1213,$3728
+    ORI.W   #4703,$1728
+    ORI.W   #4513,$2443
+    ORI.W   #6013,$1128
+
+    ORI.L   #12004300,D0
+    ORI.L   #10000002,D1
+    ORI.L   #0081,(A1)
+    ORI.L   #1001009,(A2)
+    ORI.L   #10230000,(A4)
+    ORI.L   #10212209,(A1)+
+    ORI.L   #34004029,(A2)+
+    ORI.L   #21094455,(A1)+
+    ORI.L   #11001021,-(A3)
+    ORI.L   #20000000,-(A2)
+    ORI.L   #12345689,-(A1)
+    ORI.L   #10023101,$11117246
+    ORI.L   #12200302,$55341123
+    
+    
+*----------EOR test-----------
+    
+    EOR.B   D1,D2    
+    EOR.B   D3,D4
+    EOR.B   D4,D3
+    EOR.B   D1,(A1)
+    EOR.B   D2,(A2)
+    EOR.B   #43,D1
+    EOR.B   D3,(A3)+
+    EOR.B   D3,(A4)+
+    EOR.B   D1,-(A3)
+    EOR.B   D1,-(A2)
+    EOR.B   D2,$2333 
+    EOR.B   D4,$AAAA
+    EOR.B   D1,$D221
+    EOR.B   D3,$12EE4A23
+    EOR.B   D2,$3DBE1100
+
+
+    EOR.W   D1,(A1)
+    EOR.W   D2,(A2)
+    EOR.W   D3,(A3)+
+    EOR.W   D4,(A4)+
+    EOR.W   D1,-(A3)
+    EOR.W   D1,-(A2)
+    EOR.W   D1,D2
+    EOR.W   D3,D4
+    EOR.W   #43,D3
+    EOR.W   D2,$2333 
+    EOR.W   D4,$AAEE
+    EOR.W   #3452,$D221
+    EOR.W   D3,$12EE4A23
+    EOR.W   D2,$3DBE1100
+
+    EOR.L   D1,(A1)
+    EOR.L   D2,(A2)
+    EOR.L   D4,(A3)+
+    EOR.L   D3,(A4)+
+    EOR.L   D1,-(A3)
+    EOR.L   D1,-(A2)
+    EOR.L   D1,D2
+    EOR.L   D3,D4
+    EOR.L   D4,D3
+    EOR.L   D2,$2333 
+    EOR.L   D4,$AAAA
+    EOR.L   D1,$D221
+    EOR.L   #3452,$D221
+    EOR.L   D3,$12EE4A23
+    EOR.L   D2,$3DBE1100
+    
+
+
+
+
+    SIMHALT             ; halt simulator
+
+* Put variables and constants here
+
+    END    START        ; last line of source
