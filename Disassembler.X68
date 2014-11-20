@@ -86,18 +86,36 @@ found:
         RTS
         
 
-instOPList DC.W NoOpInstruction,moveInstruction,braInstruction,dataInstruction         
-instMaskList DC.W NoOpMask,moveMask,braMask,dataMask          
-instLabelList DC.L NOP, MOVE,BRA,unknownOpCode
+instOPList DC.W negInstruction,NoOpInstruction,moveInstruction,braInstruction,dataInstruction         
+instMaskList DC.W negMAsk,NoOpMask,moveMask,braMask,dataMask          
+instLabelList DC.L NEG,NOP, MOVE,BRA,unknownOpCode
 
 snippet:
          NOP
          BRA snippet
          BRA FarLabel
          MOVE.B #4,D1
+         NEG D1
+         
 snippetEnd:
          SIMHALT
         
+
+NEG:
+        
+        LEA     negMessage,A1  ;move string for NEG info
+        MOVE.B  #14,D0        ;set for task to display null terminated 
+                              ;string without CR, LF
+        TRAP    #15
+        
+        LEA     clearLine,A1  ;move string for a CR and LF
+        MOVE.B  #14,D0        ;set for task to display null terminated 
+                              ;string without CR, LF
+        TRAP    #15
+        
+        RTS
+
+
         
 NOP:
 
@@ -292,6 +310,7 @@ badHexString:
 NoOpInstruction  EQU %0100111001110001
 moveInstruction  EQU 0
 braInstruction   EQU %0110000000000000
+negInstruction   EQU %0100010000000000
 dataInstruction  EQU 0
 
 ***
@@ -301,6 +320,7 @@ dataInstruction  EQU 0
 NoOpMask  EQU $FFFF
 moveMask  EQU $C000
 braMask   EQU $FF00
+negMask   EQU $FF00
 dataMask  EQU 0
 ***
 
@@ -316,6 +336,7 @@ invalidHexStringMessage DC.B 'Invalid Hex. Please try again',0
 nopMessage  DC.B 'NOP',0 
 moveMessage DC.B 'MOVE',0
 braMessage  DC.B 'BRA ',0
+negMessage  DC.B 'NEG',0
 dataMessage DC.B 'DATA: ',0
 
 
