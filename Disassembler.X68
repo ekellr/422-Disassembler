@@ -86,15 +86,17 @@ found:
         RTS
         
 
-instOPList DC.W negInstruction,NoOpInstruction,moveInstruction,braInstruction,dataInstruction         
-instMaskList DC.W negMAsk,NoOpMask,moveMask,braMask,dataMask          
-instLabelList DC.L NEG,NOP, MOVE,BRA,unknownOpCode
+instOPList DC.W negInstruction,NoOpInstruction,moveInstruction,bccInstruction,dataInstruction         
+instMaskList DC.W negMAsk,NoOpMask,moveMask,bccMask,dataMask          
+instLabelList DC.L NEG,NOP, MOVE,Bcc,unknownOpCode
 
 snippet:
          NOP
          BRA snippet
          BRA FarLabel
-         MOVE.B #4,D1
+         BEQ snippet
+         BGT NEG
+         BSR snippet
          NEG D1
          
 snippetEnd:
@@ -162,37 +164,61 @@ MOVEA:
         RTS
 
            
-BRA:
+Bcc:
 
-        LEA     braMessage,A1  ;move string for BRA info
+        LEA     bccMessage,A1  ;move string for BRA info
         MOVE.B  #14,D0        ;set for task to display null terminated 
                               ;string without CR, LF
         TRAP    #15
+        
+        MOVEQ.L #0,D0 ;clear D0
+        MOVE.W  D1,D2 ;move instruction into D2 for manipulaiton
+        LSR.W   #8,D2
+        AND.W   #$0F,D2 ;mask instruction
+        
+checkCC:        
+        LEA     bccList,A0 ;get condition code signature list in A0
+        ADDA.L  D0,A0 ;get correct sig         
+        CMP.B   (A0),D2 ;compare to sig
+        BEQ     foundCC ;if sig matches branch
+        ADDQ.B  #byte,D0
+        BRA     checkCC
+foundCC:
+        LEA     conditionCodeMessage,A1 ;get condition code message in A1
+        MULU.W  #long,D0 ;adjust size of D0 for a long
+        ADDA.L  D0,A1 ;get correct message location
+        MOVEA.L (A1),A1 ;get correct message
+        
+        MOVE.B  #14,D0        ;set for task to display null terminated 
+                              ;string without CR, LF
+        TRAP    #15
+
+        
         
         ADDQ.L  #word,A3 ;move past instruction in case long displacement
         AND.W   #$00FF,D1   ;check for word sized displacement
         
         CMP.B   #$0,D1
-        BEQ     BRAWord
+        BEQ     BccWord
         
         CMP.B   #$FF,D1 check for long sized displacement
-        BEQ     BRALong
+        BEQ     BccLong
         
-BRAByte:
+BccByte:
         
         MOVEQ.L #0,D7 ;pass back no extra data followed
-        BRA     BRADone
-BRAWord:
+        BRA     BccDone
+BccWord:
         MOVE.W  (A3),D1
         
         MOVEQ.L #word,D7 ;pass back an extra word followed
-        BRA     BRADone
-BRALong:
+        BRA     BccDone
+BccLong:
         MOVE.L  (A3),D1
         
         MOVEQ.L #long,D7 ;pass back an extra long followed
-        BRA     BRADone
-BRADone:
+        BRA     BccDone
+BccDone:
 
         MOVE.W  #16,D2 ;put base in D2
         MOVE.W  #15,D0  ;put task #15 in D0
@@ -309,7 +335,7 @@ badHexString:
 
 NoOpInstruction  EQU %0100111001110001
 moveInstruction  EQU 0
-braInstruction   EQU %0110000000000000
+bccInstruction   EQU %0110000000000000
 negInstruction   EQU %0100010000000000
 dataInstruction  EQU 0
 
@@ -319,11 +345,49 @@ dataInstruction  EQU 0
 
 NoOpMask  EQU $FFFF
 moveMask  EQU $C000
-braMask   EQU $FF00
+bccMask   EQU $F000
 negMask   EQU $FF00
 dataMask  EQU 0
 ***
 
+***Bcc Codes***
+CC EQU $04
+CS EQU $05
+EQ EQU $07
+GE EQU $0C
+GT EQU $0E
+HI EQU $02
+LE EQU $0F
+LS EQU $03
+LT EQU $0D
+MI EQU $0B
+NE EQU $06
+PL EQU $0A
+VC EQU $08
+VS EQU $09
+RA EQU $00 ;not really a Condition Code
+SR EQU $01 ;not really a Condition Code
+
+CCm DC.B 'CC ',0
+CSm DC.B 'CS ',0
+EQm DC.B 'EQ ',0
+GEm DC.B 'GE ',0
+GTm DC.B 'GT ',0
+HIm DC.B 'HI ',0
+LEm DC.B 'LE ',0
+LSm DC.B 'LS ',0
+LTm DC.B 'LT ',0
+MIm DC.B 'MI ',0
+NEm DC.B 'NE ',0
+PLm DC.B 'PL ',0
+VCm DC.B 'VC ',0
+VSm DC.B 'VS ',0
+RAm DC.B 'RA ',0
+SRm DC.B 'SR ',0
+
+BccList DC.B SR,CC,CS,EQ,GE,GT,HI,LE,LS,LT,MI,NE,PL,VC,VS,RA
+conditionCodeMessage DC.L SRm,CCm,CSm,EQm,GEm,GTm,HIm,LEm,LSm,LTm,MIm,NEm,PLm,VCm,VSm,RAm
+***
 
 startLocationPrompt DC.B    'Enter start location',0
 endLocationPrompt   DC.B    'Enter end location',0
@@ -335,7 +399,7 @@ invalidHexStringMessage DC.B 'Invalid Hex. Please try again',0
 
 nopMessage  DC.B 'NOP',0 
 moveMessage DC.B 'MOVE',0
-braMessage  DC.B 'BRA ',0
+bccMessage  DC.B 'B',0
 negMessage  DC.B 'NEG',0
 dataMessage DC.B 'DATA: ',0
 
@@ -350,6 +414,7 @@ endLocation         DC.L    0
    
     END    START        ; last line of source
     
+
 
 
 
